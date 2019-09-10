@@ -439,6 +439,63 @@
       </build>
     </profile>
 
+    <profile>
+      <id>docker</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>copy-resources</id>
+                <!-- here the phase you need -->
+                <phase>validate</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${basedir}/docker</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${project.build.directory}</directory>
+                      <includes>
+                        <include>**/${project.artifactId}*.tar.gz</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>dockerfile-maven-plugin</artifactId>
+            <version>1.4.3</version>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>build</goal>
+                  <!--<goal>tag</goal>-->
+                  <!--
+                  <goal>push</goal>
+                  -->
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <pullNewerImage>false</pullNewerImage>
+              <contextDirectory>${project.basedir}/docker</contextDirectory>
+              <repository>${project.groupId}/${project.artifactId}</repository>
+              <tag>${project.version}</tag>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 
 </project>

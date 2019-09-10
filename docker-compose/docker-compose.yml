@@ -1,0 +1,46 @@
+version: '2.1'
+
+services:
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: repositoryDS
+      MYSQL_USER: hippo
+      MYSQL_PASSWORD: hippo
+    restart: always
+    healthcheck:
+      test: 'mysqladmin -uroot -ppassword ping'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pacific_network
+
+  cms-site:
+    image: org.example/myproject:0.1.0-SNAPSHOT
+    depends_on:
+      mysql: {condition: service_healthy}
+    healthcheck:
+      test: 'curl -sS http://cms-site:8080/cms/ping/ || exit 1'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pacific_network
+    restart: always
+
+  nginx:
+    build: nginx/
+    ports:
+      - "80:80"
+    networks:
+      - pacific_network
+    depends_on:
+      cms-site: {condition: service_healthy}
+    restart: always
+
+networks:
+  pacific_network:
+    driver: bridge
